@@ -55,6 +55,7 @@ private var _widgets: ImageVector? = null
 private var _slash: ImageVector? = null
 private var _mic: ImageVector? = null
 private var _cpu: ImageVector? = null
+private var _more_horiz: ImageVector? = null
 private var _hammer: ImageVector? = null
 private var _drafting_compass: ImageVector? = null
 private var _plug: ImageVector? = null
@@ -2020,6 +2021,47 @@ private var _message_square: ImageVector? = null
     )
       }.build()
       return _cpu!!
+    }
+
+  val MoreHoriz: ImageVector
+    get() {
+      if (_more_horiz != null) return _more_horiz!!
+      _more_horiz = ImageVector.Builder(
+        name = "MoreHoriz",
+        defaultWidth = 24.dp,
+        defaultHeight = 24.dp,
+        viewportWidth = 24f,
+        viewportHeight = 24f,
+      ).apply {
+    addPath(
+      pathData = PathParser().parsePathString("M 11 12 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0").toNodes(),
+      fill = null,
+      stroke = SolidColor(Color.Black),
+      strokeLineWidth = 1.5f,
+      strokeLineCap = StrokeCap.Round,
+      strokeLineJoin = StrokeJoin.Round,
+      pathFillType = PathFillType.NonZero,
+    )
+    addPath(
+      pathData = PathParser().parsePathString("M 18 12 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0").toNodes(),
+      fill = null,
+      stroke = SolidColor(Color.Black),
+      strokeLineWidth = 1.5f,
+      strokeLineCap = StrokeCap.Round,
+      strokeLineJoin = StrokeJoin.Round,
+      pathFillType = PathFillType.NonZero,
+    )
+    addPath(
+      pathData = PathParser().parsePathString("M 4 12 a 1 1 0 1 0 2 0 a 1 1 0 1 0 -2 0").toNodes(),
+      fill = null,
+      stroke = SolidColor(Color.Black),
+      strokeLineWidth = 1.5f,
+      strokeLineCap = StrokeCap.Round,
+      strokeLineJoin = StrokeJoin.Round,
+      pathFillType = PathFillType.NonZero,
+    )
+      }.build()
+      return _more_horiz!!
     }
 
   val Hammer: ImageVector

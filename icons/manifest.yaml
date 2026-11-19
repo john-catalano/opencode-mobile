@@ -125,6 +125,9 @@ icons:
   - name: cpu
     lucide: cpu
     notes: Personalization — Session Composer model selector chip
+  - name: more_horiz
+    lucide: ellipsis
+    notes: Personalization — Session Composer combined commands/attach sheet
   - name: hammer
     lucide: hammer
     notes: Personalization — Session Composer Build mode chip

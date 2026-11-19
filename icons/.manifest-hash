@@ -42,6 +42,7 @@ lucide/layout-grid/widgets:lucide_widgets
 lucide/square-slash/slash:lucide_slash
 lucide/mic/mic:lucide_mic
 lucide/cpu/cpu:lucide_cpu
+lucide/ellipsis/more_horiz:lucide_more_horiz
 lucide/hammer/hammer:lucide_hammer
 lucide/drafting-compass/drafting_compass:lucide_drafting_compass
 lucide/plug/plug:lucide_plug

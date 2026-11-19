@@ -792,17 +792,22 @@ struct OpenCodeSessionComposer: View {
 
             HStack {
                 HStack(spacing: 8) {
+                    // Personalization: the ellipsis opens one combined sheet
+                    // (session commands above, attachments below). Always
+                    // enabled — commands stay reachable even when the current
+                    // model takes no attachments; the sheet gates its own rows.
                     OpenCodeButton(
-                        variant: .iconCircle(.add, accessibilityLabel: "component.composer.add_attachment"),
-                        enabled: prompt.attachEnabled,
+                        variant: .iconCircle(.moreHoriz, accessibilityLabel: .verbatim("More")),
                         contrast: .subtle,
                         action: { onAction(.attach) }
                     )
 
+                    // Personalization: the model selector (circular cpu chip)
+                    // sits here in place of the old commands button.
                     OpenCodeButton(
-                        variant: .iconCircle(.slash, accessibilityLabel: "component.composer.open_commands"),
+                        variant: .iconCircle(.cpu, accessibilityLabel: .verbatim(prompt.selectedModelLabel)),
                         contrast: .subtle,
-                        action: { onAction(.openCommands) }
+                        action: { onAction(.selectModel) }
                     )
 
                     if prompt.showDictationButton {
@@ -977,19 +982,11 @@ struct OpenCodeSessionComposer: View {
                     .accessibilityLabel(Text("component.composer.shell_mode"))
                     .accessibilityHint(Text("component.composer.leave_shell_mode"))
                 } else {
-                    // Personalization: the model selector is a circular cpu icon
-                    // button, sized and styled like the dictation mic below it,
-                    // instead of a text badge. VoiceOver still reads the selected
-                    // model's name.
-                    OpenCodeButton(
-                        variant: .iconCircle(.cpu, accessibilityLabel: .verbatim(prompt.selectedModelLabel)),
-                        contrast: .subtle,
-                        action: { onAction(.selectModel) }
-                    )
-                    .openCodeFocusKey(OpenCodeComposerFocusTarget.afterPrompt)
                     // Personalization: the mode selector shows a hammer (Build) or
                     // drafting compass (Plan) instead of the word; other agents
                     // fall back to the agent glyph. Styled like the mic button.
+                    // The model chip moved to the action row, so this is now the
+                    // first chip after the prompt field and holds its focus key.
                     OpenCodeButton(
                         variant: .iconCircle(
                             Self.modeIcon(prompt.selectedModeLabel),
@@ -998,6 +995,7 @@ struct OpenCodeSessionComposer: View {
                         contrast: .subtle,
                         action: { onAction(.selectMode) }
                     )
+                    .openCodeFocusKey(OpenCodeComposerFocusTarget.afterPrompt)
                     if prompt.showVariant {
                         OpenCodeChoiceBadge(
                             label: .unlocalized(prompt.selectedVariantLabel),

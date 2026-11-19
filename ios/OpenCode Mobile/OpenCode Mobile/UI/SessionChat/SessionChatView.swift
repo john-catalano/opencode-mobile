@@ -889,46 +889,12 @@ struct SessionChatView: View {
 
     private func sessionChatPickerSheets(_ content: some View) -> some View {
         content
-            .openCodeBottomSheet(isPresented: attachmentSourcesBinding, title: "session_chat.attachment_source.title") {
-                let sources = composerAttachmentSources
-                if sources.photos {
-                    OpenCodeBottomSheetEntry(
-                        title: sources.acceptsAnyType
-                            ? "session_chat.attachment_source.media"
-                            : "session_chat.attachment_source.photos",
-                        startDecorator: .icon(.description),
-                        action: {
-                            logAttachmentSourceAction(ProductAnalytics.Action.attachPickPhotos)
-                            showAttachmentSources = false
-                            showPhotosPicker = true
-                        }
-                    )
-                }
-                if sources.files {
-                    OpenCodeBottomSheetEntry(
-                        title: "session_chat.attachment_source.files",
-                        startDecorator: .icon(.folder),
-                        action: {
-                            logAttachmentSourceAction(ProductAnalytics.Action.attachPickFiles)
-                            showAttachmentSources = false
-                            showFilesPicker = true
-                        }
-                    )
-                }
-                if sources.logFile {
-                    OpenCodeBottomSheetEntry(
-                        title: "session_chat.attachment_source.log_file",
-                        startDecorator: .icon(.list),
-                        action: {
-                            logAttachmentSourceAction(ProductAnalytics.Action.attachPickLogFile)
-                            showAttachmentSources = false
-                            attachDiagnosticLog()
-                        }
-                    )
-                }
-            }
+            // Personalization: one combined sheet. Session commands sit above
+            // (rendered like the attachment rows); attachment sources stay at
+            // the bottom. The MCP page opens in place, like the old Commands
+            // sheet did.
             .openCodeBottomSheet(
-                isPresented: commandsSheetBinding,
+                isPresented: attachmentSourcesBinding,
                 title: viewModel.uiState.mcpPageVisible ? "session_chat.commands.mcp_title" : "session_chat.commands.title",
                 leadingAction: commandsSheetLeadingAction
             ) {
@@ -940,13 +906,47 @@ struct SessionChatView: View {
                         summary: viewModel.uiState.mcpSummary
                     )
                 } else {
-                    CommandsActionTileGrid(
-                        actions: viewModel.uiState.visibleClientSlashActions,
-                        canMutate: !OptimisticSessionCreate.isPlaceholder(viewModel.uiState.sessionID) &&
-                            viewModel.uiState.canMutate,
-                        mcpBadge: viewModel.uiState.mcpSummary.actionTileBadge,
-                        run: { viewModel.runClientSlashAction($0) }
-                    )
+                    let canMutate = !OptimisticSessionCreate.isPlaceholder(viewModel.uiState.sessionID) &&
+                        viewModel.uiState.canMutate
+                    ForEach(viewModel.uiState.visibleClientSlashActions, id: \.self) { action in
+                        combinedSheetCommandEntry(action, canMutate: canMutate)
+                    }
+                    let sources = composerAttachmentSources
+                    if sources.photos {
+                        OpenCodeBottomSheetEntry(
+                            title: sources.acceptsAnyType
+                                ? "session_chat.attachment_source.media"
+                                : "session_chat.attachment_source.photos",
+                            startDecorator: .icon(.description),
+                            action: {
+                                logAttachmentSourceAction(ProductAnalytics.Action.attachPickPhotos)
+                                showAttachmentSources = false
+                                showPhotosPicker = true
+                            }
+                        )
+                    }
+                    if sources.files {
+                        OpenCodeBottomSheetEntry(
+                            title: "session_chat.attachment_source.files",
+                            startDecorator: .icon(.folder),
+                            action: {
+                                logAttachmentSourceAction(ProductAnalytics.Action.attachPickFiles)
+                                showAttachmentSources = false
+                                showFilesPicker = true
+                            }
+                        )
+                    }
+                    if sources.logFile {
+                        OpenCodeBottomSheetEntry(
+                            title: "session_chat.attachment_source.log_file",
+                            startDecorator: .icon(.list),
+                            action: {
+                                logAttachmentSourceAction(ProductAnalytics.Action.attachPickLogFile)
+                                showAttachmentSources = false
+                                attachDiagnosticLog()
+                            }
+                        )
+                    }
                 }
             }
             .photosPicker(
@@ -2107,19 +2107,14 @@ struct SessionChatView: View {
             activePicker = .variant
         case .attach:
             logChatAction(ProductAnalytics.Action.composerAttach)
-            let sources = composerAttachmentSources
-            if sources.showsSourceSheet {
-                ProductAnalytics.logScreenView(
-                    screenId: ProductAnalytics.Screen.sessionAttachmentSource,
-                    presentation: ProductAnalytics.Presentation.sheet,
-                    trigger: ProductAnalytics.Trigger.present
-                )
-                showAttachmentSources = true
-            } else if sources.photos {
-                showPhotosPicker = true
-            } else if sources.files {
-                showFilesPicker = true
-            }
+            // Personalization: the ellipsis always opens the combined sheet;
+            // the sheet itself gates which attachment rows appear.
+            ProductAnalytics.logScreenView(
+                screenId: ProductAnalytics.Screen.sessionAttachmentSource,
+                presentation: ProductAnalytics.Presentation.sheet,
+                trigger: ProductAnalytics.Trigger.present
+            )
+            showAttachmentSources = true
         case let .removeAttachment(id):
             viewModel.removeAttachment(id: id)
         case let .pasteAttachments(providers):
@@ -2379,6 +2374,28 @@ struct SessionChatView: View {
         }
     }
 
+    /// Personalization: a session command rendered as a combined-sheet entry
+    /// row, matching the attachment rows below it. The slash "Files" command
+    /// is relabeled "Project files" so it cannot be confused with the
+    /// attachment "Files" row.
+    private func combinedSheetCommandEntry(_ action: ClientSlashAction, canMutate: Bool) -> OpenCodeBottomSheetEntry {
+        let requiresLive = action == .new || action == .fork || action == .terminal || action == .files
+        return OpenCodeBottomSheetEntry(
+            title: action == .files ? .verbatim("Project files") : OpenCodeText(action.tileLabelResource),
+            enabled: !requiresLive || canMutate,
+            startDecorator: .icon(action.tileIcon),
+            action: {
+                if action == .mcp {
+                    // The MCP servers page opens inside this sheet.
+                    viewModel.runClientSlashAction(action)
+                } else {
+                    showAttachmentSources = false
+                    viewModel.runClientSlashAction(action)
+                }
+            }
+        )
+    }
+
     private func openLastTurnChanges(assistantMessageID: String, initialFilePath: String?) {
         guard let target = viewModel.uiState.fileChangeNavigationTarget(
             worktree: boundSession.worktree,
@@ -2528,31 +2545,6 @@ private struct RetryStatusBodyTap: ViewModifier {
         } else {
             content
         }
-    }
-}
-
-private struct CommandsActionTileGrid: View {
-    let actions: [ClientSlashAction]
-    let canMutate: Bool
-    let mcpBadge: OpenCodeActionTileBadge?
-    let run: (ClientSlashAction) -> Void
-
-    var body: some View {
-        OpenCodeActionTileGrid(items: actions) { action in
-            tile(action)
-        }
-    }
-
-    private func tile(_ action: ClientSlashAction) -> OpenCodeActionTile {
-        let requiresLive = action == .new || action == .fork || action == .terminal || action == .files
-        return OpenCodeActionTile(
-            icon: action.tileIcon,
-            label: OpenCodeText(action.tileLabelResource),
-            accessibilityLabel: OpenCodeText(action.descriptionResource),
-            enabled: !requiresLive || canMutate,
-            badge: action == .mcp ? mcpBadge : nil,
-            action: { run(action) }
-        )
     }
 }
 
