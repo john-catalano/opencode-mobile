@@ -46,6 +46,8 @@ enum OpenCodeIcon: String, CaseIterable, Hashable {
     case slash = "lucide_slash"
     case mic = "lucide_mic"
     case cpu = "lucide_cpu"
+    case hammer = "lucide_hammer"
+    case draftingCompass = "lucide_drafting_compass"
     case plug = "lucide_plug"
     case code = "lucide_code"
     case lock = "lucide_lock"

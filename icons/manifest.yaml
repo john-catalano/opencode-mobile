@@ -125,6 +125,12 @@ icons:
   - name: cpu
     lucide: cpu
     notes: Personalization — Session Composer model selector chip
+  - name: hammer
+    lucide: hammer
+    notes: Personalization — Session Composer Build mode chip
+  - name: drafting_compass
+    lucide: drafting-compass
+    notes: Personalization — Session Composer Plan mode chip
   - name: plug
     lucide: plug
     notes: MCP servers tile in Commands sheet

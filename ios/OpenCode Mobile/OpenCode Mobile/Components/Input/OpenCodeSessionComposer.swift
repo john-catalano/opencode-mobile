@@ -987,10 +987,15 @@ struct OpenCodeSessionComposer: View {
                         action: { onAction(.selectModel) }
                     )
                     .openCodeFocusKey(OpenCodeComposerFocusTarget.afterPrompt)
-                    OpenCodeChoiceBadge(
-                        label: .verbatim(prompt.selectedModeLabel),
-                        selected: false,
-                        variant: .glass,
+                    // Personalization: the mode selector shows a hammer (Build) or
+                    // drafting compass (Plan) instead of the word; other agents
+                    // fall back to the agent glyph. Styled like the mic button.
+                    OpenCodeButton(
+                        variant: .iconCircle(
+                            Self.modeIcon(prompt.selectedModeLabel),
+                            accessibilityLabel: .verbatim(prompt.selectedModeLabel)
+                        ),
+                        contrast: .subtle,
                         action: { onAction(.selectMode) }
                     )
                     if prompt.showVariant {
@@ -1012,6 +1017,16 @@ struct OpenCodeSessionComposer: View {
             }
         }
         .scrollBounceBehavior(.basedOnSize, axes: .horizontal)
+    }
+
+    /// Personalization: glyph for the mode selector chip — Build → hammer,
+    /// Plan → drafting compass, anything else → the agent glyph.
+    private static func modeIcon(_ label: String) -> OpenCodeIcon {
+        switch label.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+        case "build": .hammer
+        case "plan": .draftingCompass
+        default: .agent
+        }
     }
 
     @ViewBuilder
