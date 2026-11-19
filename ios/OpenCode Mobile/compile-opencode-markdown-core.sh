@@ -25,6 +25,12 @@ framework="$TARGET_BUILD_DIR/$FRAMEWORKS_FOLDER_PATH/OpenCodeMarkdownCore.framew
 if [ "${CODE_SIGNING_ALLOWED:-YES}" != "NO" ] && [ -d "$framework" ]; then
   identity="${EXPANDED_CODE_SIGN_IDENTITY:-}"
   if [ -n "$identity" ]; then
+    # The Gradle build output lives under ~/Documents, where iCloud File
+    # Provider sync attaches FinderInfo/fileprovider extended attributes.
+    # Gradle copies them along with the framework, and codesign rejects
+    # them as "resource fork, Finder information, or similar detritus".
+    # Strip them from the embedded copy before signing.
+    /usr/bin/xattr -cr "$framework"
     /usr/bin/codesign --force --sign "$identity" --generate-entitlement-der "$framework"
   fi
 fi
