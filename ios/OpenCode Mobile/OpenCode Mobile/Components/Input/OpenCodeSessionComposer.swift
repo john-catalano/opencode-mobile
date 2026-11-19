@@ -977,10 +977,13 @@ struct OpenCodeSessionComposer: View {
                     .accessibilityLabel(Text("component.composer.shell_mode"))
                     .accessibilityHint(Text("component.composer.leave_shell_mode"))
                 } else {
-                    OpenCodeChoiceBadge(
-                        label: .verbatim(prompt.selectedModelLabel),
-                        selected: false,
-                        variant: .glass,
+                    // Personalization: the model selector is a circular cpu icon
+                    // button, sized and styled like the dictation mic below it,
+                    // instead of a text badge. VoiceOver still reads the selected
+                    // model's name.
+                    OpenCodeButton(
+                        variant: .iconCircle(.cpu, accessibilityLabel: .verbatim(prompt.selectedModelLabel)),
+                        contrast: .subtle,
                         action: { onAction(.selectModel) }
                     )
                     .openCodeFocusKey(OpenCodeComposerFocusTarget.afterPrompt)
