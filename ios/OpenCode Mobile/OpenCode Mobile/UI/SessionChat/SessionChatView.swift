@@ -2032,7 +2032,9 @@ struct SessionChatView: View {
                     history: OpenCodePromptHistory.entries(viewModel.uiState.messages.map { row in
                         OpenCodePromptHistory.Message(isUser: row.role == .user, text: row.text, isPending: row.isPending)
                     }),
-                    placeholder: SessionChatGoalCopy.resumesAfterReply(shownGoal) ? SessionChatGoalCopy.resumePlaceholder : nil,
+                    placeholder: SessionChatGoalCopy.resumesAfterReply(shownGoal)
+                        ? SessionChatGoalCopy.resumePlaceholder
+                        : composer.modelPlaceholder,
                     footnote: sideQuestionMode
                         ? nil
                         : goalDraft?.footnote.map { OpenCodeSessionComposerFootnote(text: $0, isError: goalDraft?.isOverLimit == true) }

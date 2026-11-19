@@ -157,6 +157,14 @@ struct SessionChatComposerState: Equatable {
         isModelSelectionReady ? selectedModel?.modelLabel ?? "Model" : "Loading model…"
     }
 
+    /// Personalization: the idle composer placeholder names the selected model
+    /// ("Ask GLM 5.3...") instead of "Ask anything...". Nil until the catalog
+    /// loads, so the field falls back to the default placeholder while loading.
+    var modelPlaceholder: String? {
+        guard isModelSelectionReady else { return nil }
+        return selectedModel.map { "Ask \($0.modelLabel)..." }
+    }
+
     var selectedVariantLabel: String {
         TitleCaseIdentifier.displayName(for: selectedVariant ?? ModelSelection.defaultVariantLabel)
     }
